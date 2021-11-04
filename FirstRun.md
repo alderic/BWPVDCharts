@@ -9,4 +9,4 @@ to debug, ensure right helper by downloading BlazorDebugProxy nuget with latest 
 https://www.nuget.org/packages/Microsoft.AspNetCore.Components.WebAssembly.DevServer/
 
 
-window.zoomLevel set in prefs!
+window.zoomLevel set in prefs!!
