@@ -1,0 +1,28 @@
+﻿@using Excubo.Blazor.Canvas
+
+@page "/"
+<b>chart update tick: @count</b>
+<LineChart DataSet="@ds" @ref="chart"/>
+
+@code {
+   // Canvas canvas;
+   LineChart chart = null;
+   int count;
+    LineDataSet ds;
+
+       protected override void OnInitialized(){
+           LineChart chart;
+           
+            this.ds = new LineDataSet();
+            var rand = new Random();
+            //  this.StateHasChanged();
+            var aTimer = new System.Timers.Timer(250);
+            aTimer.Elapsed += (o,e)=>{
+                count++;
+                this.ds.AddPoint(this.ds.Points.Count, rand.Next(145, 155));
+                this.InvokeAsync(this.chart.Update);
+            };
+            aTimer.Enabled = true;
+       }
+
+}
