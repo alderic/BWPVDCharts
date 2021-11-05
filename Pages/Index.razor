@@ -3,24 +3,32 @@
 @page "/"
 <b>chart update tick: @count</b>
 <LineChart DataSet="@ds" @ref="chart"/>
+<button onclick="@Switch">Switch</button>
 
 @code {
    // Canvas canvas;
    LineChart chart = null;
    int count;
     LineDataSet ds;
-
+        protected void Switch()
+        {
+            this.ds.ShowAll = !this.ds.ShowAll;          
+        }
        protected override void OnInitialized(){
            LineChart chart;
            
             this.ds = new LineDataSet();
+            this.ds.View = new LogicalView(300, 200, 60, false); 
             var rand = new Random();
             //  this.StateHasChanged();
             var aTimer = new System.Timers.Timer(250);
             aTimer.Elapsed += (o,e)=>{
                 count++;
                 this.ds.AddPoint(this.ds.Points.Count, rand.Next(145, 155));
-                this.InvokeAsync(this.chart.Update);
+                this.InvokeAsync(()=> {
+                    this.chart.Update();
+                    this.StateHasChanged();
+                });
             };
             aTimer.Enabled = true;
        }

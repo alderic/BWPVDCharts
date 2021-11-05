@@ -2,6 +2,7 @@ namespace BWPVDCharts
 {
     public class DataPoint
     {
+         public DataPoint(){}
         public DataPoint(int x, int y)
         {
             X = x;
