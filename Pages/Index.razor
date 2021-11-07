@@ -4,7 +4,7 @@
 <b>chart update tick: @count</b>
 <LineChart DataSet="@ds" @ref="chart"/>
 <button onclick="@Switch">Switch</button>
-
+<button onclick="@Load">Load</button>
 @code {
    // Canvas canvas;
    LineChart chart = null;
@@ -12,25 +12,49 @@
     LineDataSet ds;
         protected void Switch()
         {
-            this.ds.ShowAll = !this.ds.ShowAll;          
-        }
-       protected override void OnInitialized(){
+            this.ds.View.ShowAll = !this.ds.View.ShowAll;
+            DateTime time = DateTime.Now;
+            this.ds.AddTimePoint(time, 250);
+            this.ds.View.Switch(); 
+            this.chart.Update();     
+            this.StateHasChanged();     
+        }   
+         protected void Load()
+        {
+             var rand = new Random();
+            //  this.StateHasChanged();
+            var t = DateTime.Now;
+            for (var i = 0; i < 10000; i++){
+               t =  t.AddMilliseconds(i);
+                  this.ds.AddTimePoint(t, rand.Next(145, 155));
+              
+            }
+              this.ds.View.Update();
+          
+             this.chart.Update();
+          
+        }    
+         protected override void OnInitialized(){
            LineChart chart;
            
             this.ds = new LineDataSet();
-            this.ds.View = new LogicalView(300, 200, 60, false); 
-            var rand = new Random();
+            this.ds.View = new LogicalView(300, 200, 30, false);
+            this.ds.View.Owner = this.ds; 
+         /*   var rand = new Random();
             //  this.StateHasChanged();
+
             var aTimer = new System.Timers.Timer(250);
             aTimer.Elapsed += (o,e)=>{
                 count++;
-                this.ds.AddPoint(this.ds.Points.Count, rand.Next(145, 155));
+                DateTime time = DateTime.Now;
+                this.ds.AddTimePoint(time, rand.Next(145, 155));
+                this.ds.View.Update();
                 this.InvokeAsync(()=> {
                     this.chart.Update();
                     this.StateHasChanged();
                 });
             };
-            aTimer.Enabled = true;
+            aTimer.Enabled = true;*/
        }
 
 }

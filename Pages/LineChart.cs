@@ -27,32 +27,39 @@ namespace BWPVDCharts {
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            await UpdateCanvasAsync();
-            if (firstRender){
-               
+           
+            if (!firstRender){
+           //     await UpdateCanvasAsync();
             }
             await base.OnAfterRenderAsync(firstRender);
         }
 
         private async Task UpdateCanvasAsync()
         {
-             await using (var ctx = await canvas.GetContext2DAsync())
+            var view = this.DataSet.View;
+           
+            await using (var ctx = await canvas.GetContext2DAsync())
             {
 
                 await ctx.ClearRectAsync(0, 0, this.DataSet.View.Widht, this.DataSet.View.Height);
+                 if (view.Points.Count == 0) 
+                return;
                /* await ctx.SetTransformAsync(1, 0, 0, 1, 0, 0);
                 await ctx.RestoreAsync();
                 await ctx.SaveAsync();*/
                 await ctx.BeginPathAsync(  );
 
                 var i = 0;
-                var point = this.DataSet.ViewPoints[i];
-                var pointCount = this.DataSet.ViewPoints.Count;
-                i++;
-                await ctx.MoveToAsync(point.X, point.Y);
+                ViewTimePoint point = null;
+                var pointCount = view.Points.Count;
+                await ctx.MoveToAsync(0, view.StartPoint.Y);
+                Console.WriteLine(view.StartPoint.Y);
                 while (i < pointCount){
-                    point = this.DataSet.ViewPoints[i];
+                    point = view.Points[i];
                     await ctx.LineToAsync(point.X, point.Y);
+                    if (i == 0)
+                        Console.WriteLine(point.Y);
+                    i++;
                 }
                /* var delta = 300.0/60.0;
                 if (isShowAll) {
