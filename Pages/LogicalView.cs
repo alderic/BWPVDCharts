@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace BWPVDCharts{
     public class LogicalView{
         public LineDataSet Owner;
@@ -60,13 +62,96 @@ public ViewTimePoint StartPoint {get { return this.startPoint; } }
             }
         }
         public void Update() {
+               var start = this.Owner.Points.First();
+                var end = this.Owner.Points.Last();
+                var min = start.X.Ticks;
+                var max = end.X.Ticks;
+                var unit = TimeSpan.FromMilliseconds(250).Ticks;
+                var totalTicks = (max - min) / (float)unit ;
+                 var totalTicks2 = (max - min) / unit;
+                var factor = (float)this.Widht /  (float)totalTicks;
+
+                this.points.Clear();
+                var sb = new StringBuilder();
+                ViewTimePoint prev = null;
+                foreach (var point in this.Owner.Points)
+                {
+                    var p = new ViewTimePoint(point, this);
+                    p.Y = this.Height - p.Data.Y;
+                    p.RealX = (int)((point.X.Ticks - start.X.Ticks) / unit);
+                    p.DebugView = TimeSpan.FromTicks(point.X.Ticks - start.X.Ticks);
+                    p.ViewXF = (int) Math.Floor(p.RealX * factor);
+                   p.ViewXC =(int) Math.Ceiling(p.RealX * factor);
+                    p.X = p.ViewXC;
+                  //  this.points.Add(p);
+                   if (prev != null && prev.X == p.X){
+                        prev.MinY = Math.Min(prev.MinY, p.Y);
+                        prev.MaxY = Math.Max(prev.MaxY, p.Y);
+                         prev = p;
+                    } else {
+                    this.points.Add(p);
+                    
+                    prev = p;
+                    prev.MinY = prev.Y;
+                    prev.MaxY = prev.Y;
+                    }
+                    
+                }
+            return;
             if (this.ShowAll)
                 this.UpdateAllInternal();
-            else 
+            else
                 this.UpdateIntervalInternal();
+
+         //   this.ConvertToBezier();
         }
 
-    private void UpdateIntervalInternal()
+        private void ConvertToBezier(double tension = 2)
+        {
+            var bezierPoints = new List<ViewTimePoint>();
+
+  for (var i = 0; i < points.Count; i++) {
+    if (i == 0) {
+      bezierPoints.Add(points[0]);
+      continue;
+    }
+
+    int i1, i2, pointIndex;
+
+    pointIndex = i - 1;
+    i1 = pointIndex == 0 ? 0 : pointIndex - 1;
+    i2 = pointIndex == points.Count - 1 ? pointIndex : pointIndex + 1;
+
+    var drv1 = new ViewTimePoint {
+      X = (int)((points[i2].X - points[i1].X) / tension ),
+      Y=  (int)((points[i2].Y - points[i1].Y) / tension )
+    };
+    var cp1 = new ViewTimePoint{
+      X= (int)(points[pointIndex].X + drv1.X / 3),
+      Y= (int)( points[pointIndex].Y + drv1.Y / 3)
+    };
+    bezierPoints.Add(cp1);
+
+    pointIndex = i;
+    i1 = pointIndex ==0 ? 0 : pointIndex - 1;
+    i2 = pointIndex == points.Count - 1 ? pointIndex : pointIndex + 1;
+
+    var drv2 = new ViewTimePoint{
+      X= (int)((points[i2].X - points[i1].X) / tension),
+      Y= (int)((points[i2].Y- points[i1].Y) / tension)
+    };
+    var cp2 = new ViewTimePoint{
+      X=(int)(points[pointIndex].X - drv2.X / 3),
+      Y=(int)( points[pointIndex].Y - drv2.Y / 3)
+    };
+    bezierPoints.Add(cp2);
+
+    bezierPoints.Add( points[i]);
+    }
+    Console.WriteLine(bezierPoints.Count);
+}
+
+        private void UpdateIntervalInternal()
         {
              var point = this.points.Last();
                 if (point.OffsetX > this.displayIntervalInTicks)

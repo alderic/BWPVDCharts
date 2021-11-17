@@ -1,14 +1,21 @@
-﻿@using Excubo.Blazor.Canvas
+﻿@using Blazor.Extensions
+@using Excubo.Blazor.Canvas
 
 @page "/"
 <b>chart update tick: @count</b>
 <LineChart DataSet="@ds" @ref="chart"/>
 <button onclick="@Switch">Switch</button>
 <button onclick="@Load">Load</button>
+<b>Point Count: @ds.Points.Count, View Point Count: @ds.View.Points.Count</b>
+@foreach (var point in ds.View.Points)
+{
+    <p>x: @point.X, xc: @point.ViewXC, xf: @point.ViewXF, x_unit: @point.DebugView, y: @point.MinY - @point.MaxY</p>
+}
 @code {
    // Canvas canvas;
    LineChart chart = null;
    int count;
+   BECanvasComponent _canvasReference;
     LineDataSet ds;
         protected void Switch()
         {
@@ -21,18 +28,22 @@
         }   
          protected void Load()
         {
+            this.ds.ShowAll = true;
+            this.ds.View.ShowAll = true;
              var rand = new Random();
-            //  this.StateHasChanged();
+  
             var t = DateTime.Now;
             for (var i = 0; i < 10000; i++){
-               t =  t.AddMilliseconds(i);
-                  this.ds.AddTimePoint(t, rand.Next(145, 155));
+                t =  t.AddMilliseconds(250);
+                    if (i % 100 != 0)
+                         this.ds.AddTimePoint(t, rand.Next(145, 155));
+                    else this.ds.AddTimePoint(t, rand.Next(0, 200));
               
             }
               this.ds.View.Update();
           
              this.chart.Update();
-          
+                      this.StateHasChanged();
         }    
          protected override void OnInitialized(){
            LineChart chart;
@@ -40,7 +51,7 @@
             this.ds = new LineDataSet();
             this.ds.View = new LogicalView(300, 200, 30, false);
             this.ds.View.Owner = this.ds; 
-         /*   var rand = new Random();
+            var rand = new Random();
             //  this.StateHasChanged();
 
             var aTimer = new System.Timers.Timer(250);
@@ -54,7 +65,7 @@
                     this.StateHasChanged();
                 });
             };
-            aTimer.Enabled = true;*/
+            //aTimer.Enabled = true;
        }
 
 }

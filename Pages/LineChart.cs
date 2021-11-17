@@ -4,6 +4,7 @@ using System.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Excubo.Blazor.Canvas;
+using Blazor.Extensions;
 
 namespace BWPVDCharts {
     public class LineChart : ComponentBase {
@@ -11,15 +12,16 @@ namespace BWPVDCharts {
         public LineDataSet DataSet {get;set;}
         bool isShowAll = false;
         Canvas canvas;
+        BECanvasComponent  canvasRef;
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
     
             int count = 0;
-            builder.OpenComponent<Canvas>(count++);
-            builder.AddAttribute(count++, "width", this.DataSet.View.Widht);
-            builder.AddAttribute(count++, "height", this.DataSet.View.Height);
-            builder.AddAttribute(count++, "style", "border: 1px solid gray");
-            builder.AddComponentReferenceCapture(count++, inst=> this.canvas = (Excubo.Blazor.Canvas.Canvas)inst);
+            builder.OpenComponent<Blazor.Extensions.Canvas.BECanvas>(count++);
+            builder.AddAttribute(count++, "Width", (long)this.DataSet.View.Widht);
+            builder.AddAttribute(count++, "Height", (long)this.DataSet.View.Height);
+       //     builder.AddAttribute(count++, "style", "border: 1px solid gray");
+            builder.AddComponentReferenceCapture(count++, inst=> this.canvasRef = (BECanvasComponent)inst);
             builder.CloseComponent();
        
            // base.BuildRenderTree(builder);
@@ -28,9 +30,7 @@ namespace BWPVDCharts {
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
            
-            if (!firstRender){
-           //     await UpdateCanvasAsync();
-            }
+            await UpdateCanvasAsync();  
             await base.OnAfterRenderAsync(firstRender);
         }
 
@@ -38,6 +38,39 @@ namespace BWPVDCharts {
         {
             var view = this.DataSet.View;
            
+           using  (var context = await this.canvasRef.CreateCanvas2DAsync()) {
+              await context.BeginBatchAsync();
+                await context.ClearRectAsync(0, 0, this.DataSet.View.Widht, this.DataSet.View.Height);
+               
+                 if (view.Points.Count == 0) 
+                return;
+               /* await ctx.SetTransformAsync(1, 0, 0, 1, 0, 0);
+                await ctx.RestoreAsync();
+                await ctx.SaveAsync();*/
+                await context.BeginPathAsync(  );
+
+                var i = 0;
+                ViewTimePoint point = null;
+                var pointCount = view.Points.Count;
+                await context.MoveToAsync(0, view.StartPoint.Y);
+                Console.WriteLine(view.StartPoint.Y);
+                while (i < pointCount){
+                    point = view.Points[i];
+                   
+                    await context.LineToAsync(point.X, point.Y);
+             
+                    i++;
+                }
+                await context.SetStrokeStyleAsync("#ccc");
+                  await context.SetLineWidthAsync(2);
+                   await context.StrokeAsync();
+
+          await context.EndBatchAsync();
+              
+           }
+   
+
+           return;
             await using (var ctx = await canvas.GetContext2DAsync())
             {
 
