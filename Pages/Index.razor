@@ -2,21 +2,99 @@
 @using Excubo.Blazor.Canvas
 
 @page "/"
-<b>chart update tick: @count</b>
-<LineChart DataSet="@ds" @ref="chart"/>
-<button onclick="@Switch">Switch</button>
-<button onclick="@Load">Load</button>
-<b>Point Count: @ds.Points.Count, View Point Count: @ds.View.Points.Count</b>
-@foreach (var point in ds.View.Points)
+<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+    <div class="btn-group  mr-2" role="group" aria-label="Basic example">
+        <button type="button" @onclick="OnLiveUpdateCmd" class="btn btn-secondary">@liveUpdateCmdText</button>
+    </div>
+        <div class="btn-group mr-2" role="group" aria-label="Basic example">
+        <button type="button" @onclick="Pick" class="btn btn-secondary">MakePick</button>
+    </div>
+    <div class="btn-group mr-2" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-secondary">Last</button>
+        <button type="button" class="btn btn-secondary">All</button>
+    </div>
+     <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button"  @onclick="() => Pull(100)" class="btn btn-secondary">Pull 100</button>
+        <button type="button" @onclick="() => Pull(1000)" class="btn btn-secondary">Pull 1000</button>
+        <button type="button" @onclick="() => Pull(10000)" class="btn btn-secondary">Pull 10000</button>
+    </div>
+</div>
+
+<LineChart Model="@chartModel" @ref="chart"/>
+@time;
+<div>Point Count: @(chartModel.ViewPoints.Count),  @(chartModel.DataPoints.Count)</div>
+<div>
+    @foreach (var point in chartModel.ViewPoints)
 {
-    <p>x: @point.X, xc: @point.ViewXC, xf: @point.ViewXF, x_unit: @point.DebugView, y: @point.MinY - @point.MaxY</p>
+    <p>x: @point.X,  x_unit: @point.DebugViewTime, y: @point.IsComplex </p>
 }
+</div>
 @code {
    // Canvas canvas;
    LineChart chart = null;
+   LineViewModel chartModel;
+   System.Timers.Timer timer;
    int count;
-   BECanvasComponent _canvasReference;
-    LineDataSet ds;
+   Random rand;
+   string liveUpdateCmdText = "Start";
+     
+   protected async override Task OnInitializedAsync(){
+       this.rand = new Random();
+
+       this.chartModel = new LineViewModel(){
+           Widht = 300,
+           Height = 200,
+           UpdateInterval = 250
+       };
+
+        this.timer = new System.Timers.Timer(250);
+        this.timer.Elapsed += async (o,e)=>{
+                count++;
+                DateTime time = DateTime.Now;
+                this.chartModel.AddPoint(time, rand.Next(145, 155));
+                this.chartModel.Update();
+                await this.InvokeAsync(()=> {
+                    this.chart.Update();
+                    this.StateHasChanged();
+                });
+            };
+            //aTimer.Enabled = true;
+   }
+   protected void OnLiveUpdateCmd(){
+       if (this.timer.Enabled){
+           this.timer.Enabled = false;
+           this.liveUpdateCmdText = "Start";
+       } else {
+           this.timer.Enabled = true;
+           this.liveUpdateCmdText = "Stop";
+       }
+   }
+   protected void Pick(){
+        DateTime time = DateTime.Now;
+        this.chartModel.AddPoint(time, rand.Next(0, 200));
+        this.chartModel.Update();
+        this.chart.Update();
+        this.StateHasChanged();
+   }
+   protected void Pull(int quantity){
+       var s = DateTime.Now.Ticks;
+       this.chartModel.Clear(true);
+        var t = DateTime.Now;
+        for (var i = 0; i < quantity; i++){
+            t =  t.AddMilliseconds(250);
+            if (i % 100 != 0)
+                    this.chartModel.AddPoint(t, rand.Next(145, 155));
+            else this.chartModel.AddPoint(t, rand.Next(0, 200));
+            
+        }
+        this.time = TimeSpan.FromTicks(DateTime.Now.Ticks - s);
+       // this.chartModel.Update();
+       // this.chart.Update();
+      //  this.StateHasChanged();
+
+   }
+   TimeSpan time;
+/*
         protected void Switch()
         {
             this.ds.View.ShowAll = !this.ds.View.ShowAll;
@@ -67,5 +145,5 @@
             };
             //aTimer.Enabled = true;
        }
-
+*/
 }
