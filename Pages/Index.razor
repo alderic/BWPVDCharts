@@ -1,5 +1,5 @@
 ﻿@using Blazor.Extensions
-@using Excubo.Blazor.Canvas
+
 
 @page "/"
 <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
@@ -21,7 +21,7 @@
 </div>
 
 <LineChart Model="@chartModel" @ref="chart"/>
-@time;
+@time.TotalMilliseconds
 <div>Point Count: @(chartModel.ViewPoints.Count),  @(chartModel.DataPoints.Count)</div>
 <div>
     @foreach (var point in chartModel.ViewPoints)
@@ -78,14 +78,19 @@
    }
    protected void Pull(int quantity){
        var s = DateTime.Now.Ticks;
-       this.chartModel.Clear(true);
+      /* this.chartModel.Clear(true);
         var t = DateTime.Now;
-        for (var i = 0; i < quantity; i++){
+        for (var i = 0; i < quantity*100; i++){
             t =  t.AddMilliseconds(250);
-            if (i % 100 != 0)
-                    this.chartModel.AddPoint(t, rand.Next(145, 155));
-            else this.chartModel.AddPoint(t, rand.Next(0, 200));
+       //     if (i % 100 != 0)
+       //             this.chartModel.AddPoint(t, rand.Next(145, 155));
+      //      else 
+         this.chartModel.AddPoint(t, i%200);
             
+        }*/
+        var list = new List<string>();
+         for (var i = 0; i < quantity*100; i++) {
+            list.Add("Item_"+i);
         }
         this.time = TimeSpan.FromTicks(DateTime.Now.Ticks - s);
        // this.chartModel.Update();

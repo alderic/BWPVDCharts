@@ -3,7 +3,7 @@ using System.Text;
 using System.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using Excubo.Blazor.Canvas;
+
 using Blazor.Extensions;
 
 namespace MiK.Charts {
