@@ -10,3 +10,14 @@ https://www.nuget.org/packages/Microsoft.AspNetCore.Components.WebAssembly.DevSe
 
 
 window.zoomLevel set in prefs!!
+
+
+
+
+Then to run it, we need a web server to host the server side of the app, and to make that easy, I’ll use the dotnet serve global tool. To install it, run:
+
+dotnet tool install --global dotnet-serve
+at which point you can start a simple web server for the files in the published directory:
+
+pushd D:\examples\app5\bin\Release\net5.0\publish\wwwroot
+dotnet serve -o

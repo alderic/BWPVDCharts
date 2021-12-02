@@ -7,6 +7,7 @@ namespace MiK.Charts
 
         public DateTime Time {get {return this.time;}}
         public int Val {get {return this.val;}}
+        public int LogicalX {get;set;}
         public DataPoint(DateTime time, int val)
         {
             this.time = time;

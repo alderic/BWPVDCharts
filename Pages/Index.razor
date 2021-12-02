@@ -17,9 +17,10 @@
         <button type="button"  @onclick="() => Pull(100)" class="btn btn-secondary">Pull 100</button>
         <button type="button" @onclick="() => Pull(1000)" class="btn btn-secondary">Pull 1000</button>
         <button type="button" @onclick="() => Pull(10000)" class="btn btn-secondary">Pull 10000</button>
+                <button type="button" @onclick="() => Pull(100000)" class="btn btn-secondary">Pull 100000</button>
     </div>
 </div>
-
+<div>Render count21: @renderCount</div>
 <LineChart Model="@chartModel" @ref="chart"/>
 @time;
 <div>Point Count: @(chartModel.ViewPoints.Count),  @(chartModel.DataPoints.Count)</div>
@@ -27,9 +28,12 @@
     @foreach (var point in chartModel.ViewPoints)
 {
     <p>x: @point.X,  x_unit: @point.DebugViewTime, y: @point.IsComplex </p>
-}
+}//dsdsd
+
 </div>
 @code {
+        int renderCount;
+
    // Canvas canvas;
    LineChart chart = null;
    LineViewModel chartModel;
@@ -37,7 +41,8 @@
    int count;
    Random rand;
    string liveUpdateCmdText = "Start";
-     
+    protected override void OnAfterRender(bool firstRender) => renderCount++;
+
    protected async override Task OnInitializedAsync(){
        this.rand = new Random();
 
@@ -46,7 +51,7 @@
            Height = 200,
            UpdateInterval = 250
        };
-
+        this.chartModel.Init();
         this.timer = new System.Timers.Timer(250);
         this.timer.Elapsed += async (o,e)=>{
                 count++;
@@ -77,20 +82,20 @@
         this.StateHasChanged();
    }
    protected void Pull(int quantity){
+     
        var s = DateTime.Now.Ticks;
        this.chartModel.Clear(true);
         var t = DateTime.Now;
         for (var i = 0; i < quantity; i++){
-            t =  t.AddMilliseconds(250);
+            t =  t.AddMilliseconds(-250);
             if (i % 100 != 0)
-                    this.chartModel.AddPoint(t, rand.Next(145, 155));
+                this.chartModel.AddPoint(t, rand.Next(145, 155));
             else this.chartModel.AddPoint(t, rand.Next(0, 200));
-            
         }
         this.time = TimeSpan.FromTicks(DateTime.Now.Ticks - s);
-       // this.chartModel.Update();
-       // this.chart.Update();
-      //  this.StateHasChanged();
+        this.chartModel.Update();
+        this.chart.Update();
+        this.StateHasChanged();
 
    }
    TimeSpan time;
