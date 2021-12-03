@@ -86,7 +86,7 @@ namespace MiK.Charts
         }
         public void Init()
         {
-            //   this.view = ChartDisplayType.ShowAll;
+               this.View = ChartDisplayType.DynamicRange;
             this.displayInterval = TimeSpan.FromSeconds(60).Ticks;
             this.curentDisplayInterval = this.displayInterval;
             this.unit = TimeSpan.FromMilliseconds(this.UpdateInterval).Ticks;
@@ -105,10 +105,34 @@ namespace MiK.Charts
             {
                 case ChartDisplayType.DynamicRange:
                     var recalc = CalculateDisplayInterval(min, max);
-                    
+                    if (true) {
+                        var totalTicksPerUnit = this.intervals[this.currentIntervalIndex] / unit;
+                        var factor = (float)this.Widht / (float)totalTicksPerUnit;
+                        this.Clear();
+                        ViewPoint prev = null;
+                          foreach (var dataPoint in this.dataPoints)
+                    {
+                        var p = dataPoint.ToViewPoint(this);
+                        p.MapY();
+                        p.LogicalX = (int)((dataPoint.Time.Ticks - this.start.Time.Ticks) / unit);
+                        p.DebugViewTime = TimeSpan.FromTicks(dataPoint.Time.Ticks - this.start.Time.Ticks);
+                        p.X = (int)Math.Ceiling(p.LogicalX * factor);
+                        //  this.points.Add(p);
+                        Console.WriteLine(p.X);
+                        if (prev != null && prev.X == p.X)
+                        {
+                            prev.Merge(p);
+                        }
+                        else
+                        {
+                            this.viewPoints.Add(p);
+                        }
+                        prev = p;
+                    }
+                    }
                   //  var 
                     break;
-                case ChartDisplayType.ShowAll:
+              /*  case ChartDisplayType.ShowAll:
                     var totalTicksPerUnit = (max - min) / unit;
                     Console.WriteLine("totalTicksPerUnit: " + totalTicksPerUnit);
                     var factor = (float)this.Widht / (float)totalTicksPerUnit;
@@ -134,7 +158,7 @@ namespace MiK.Charts
                         prev = p;
                     }
 
-                    break;
+                    break;*/
             }
             /*
               var startPoint = this.dataPoints[0];
