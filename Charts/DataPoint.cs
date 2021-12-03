@@ -5,9 +5,9 @@ namespace MiK.Charts
         private DateTime time;
         private int val;
 
-        public DateTime Time {get {return this.time;}}
-        public int Val {get {return this.val;}}
-        public int LogicalX {get;set;}
+        public DateTime Time { get { return this.time; } set { this.time = time; } }
+        public int Val { get { return this.val; } }
+        public int LogicalX { get; set; }
         public DataPoint(DateTime time, int val)
         {
             this.time = time;
@@ -16,7 +16,12 @@ namespace MiK.Charts
 
         internal ViewPoint ToViewPoint(LineViewModel model)
         {
-           return new ViewPoint(this, model);
+            return new ViewPoint(this, model);
+        }
+
+        internal void CalcLogicalX(long ticks, long unit)
+        {
+            this.LogicalX = (int)((this.time.Ticks - ticks) / unit);
         }
     }
 }
